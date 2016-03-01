@@ -24,7 +24,6 @@ func main() {
 		// Turn OFF led
 		arduino.DigitalWrite(led, false)
 		time.Sleep(myDelay)
-
 	}
 	arduino.Close()
 }
