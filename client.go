@@ -135,23 +135,17 @@ func (c *FirmataClient) DigitalWrite(pin uint8, val bool) error {
 
 // Specified if a analog Pin should be watched for input.
 // Values will be streamed back over a channel which can be retrieved by the Values() call.
-func (c *FirmataClient) EnableAnalogInput(pin uint, val bool) (err error) {
+func (c *FirmataClient) EnableAnalogInput(pin uint, val bool) error {
 	if pin < 0 || pin > uint(len(c.pinModes)) && c.pinModes[pin][Analog] != nil {
-		err = fmt.Errorf("Invalid pin number %v\n", pin)
-		return
+		return fmt.Errorf("invalid pin number: %v\n", pin)
 	}
-
 	ch := byte(c.analogPinsChannelMap[int(pin)])
-	c.Log.Printf("Enable analog inout on pin %v channel %v", pin, ch)
 	if val {
 		cmd := []byte{byte(EnableAnalogInput) | ch, 0x01}
-		err = c.sendCommand(cmd)
-	} else {
-		cmd := []byte{byte(EnableAnalogInput) | ch, 0x00}
-		err = c.sendCommand(cmd)
+		return c.sendCommand(cmd)
 	}
-
-	return
+	cmd := []byte{byte(EnableAnalogInput) | ch, 0x00}
+	return c.sendCommand(cmd)
 }
 
 func (c *FirmataClient) AnalogWrite(pin uint, pinData byte) error {
