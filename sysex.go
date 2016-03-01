@@ -96,6 +96,6 @@ func (c *FirmataClient) sendSysEx(cmd SysExCommand, data ...byte) (err error) {
 	}
 	c.Log.Printf("SysEx send %v\n", bStr)
 
-	_, err = b.WriteTo(*(c.conn))
+	_, err = b.WriteTo(c.conn)
 	return
 }

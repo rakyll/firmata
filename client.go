@@ -29,7 +29,7 @@ import (
 type FirmataClient struct {
 	serialDev string
 	baud      int
-	conn      *io.ReadWriteCloser
+	conn      io.ReadWriteCloser
 	Log       *log.Logger
 
 	protocolVersion []byte
@@ -56,10 +56,8 @@ type FirmataClient struct {
 // over specified serial port. This function blocks till a connection is
 // succesfullt established and pin mappings are retrieved.
 func NewClient(dev string, baud int) (client *FirmataClient, err error) {
-	var conn io.ReadWriteCloser
-
 	c := &serial.Config{Name: dev, Baud: baud}
-	conn, err = serial.OpenPort(c)
+	conn, err := serial.OpenPort(c)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +65,7 @@ func NewClient(dev string, baud int) (client *FirmataClient, err error) {
 	client = &FirmataClient{
 		serialDev: dev,
 		baud:      baud,
-		conn:      &conn,
+		conn:      conn,
 		Log:       log.New(os.Stdout, "[go-firmata] ", log.Ltime),
 	}
 
@@ -90,8 +88,8 @@ func NewClient(dev string, baud int) (client *FirmataClient, err error) {
 
 // Close the serial connection to properly clean up after ourselves
 // Usage: defer client.Close()
-func (c *FirmataClient) Close() {
-	(*c.conn).Close()
+func (c *FirmataClient) Close() error {
+	return c.conn.Close()
 }
 
 // Sets the Pin mode (input, output, etc.) for the Arduino pin
@@ -172,30 +170,23 @@ func (c *FirmataClient) EnableAnalogInput(pin uint, val bool) (err error) {
 }
 
 // Set the value of a analog pin
-func (c *FirmataClient) AnalogWrite(pin uint, pinData byte) (err error) {
+func (c *FirmataClient) AnalogWrite(pin uint, pinData byte) error {
 	if pin < 0 || pin > uint(len(c.pinModes)) && c.pinModes[pin][Analog] != nil {
-		err = fmt.Errorf("Invalid pin number %v\n", pin)
-		return
+		return fmt.Errorf("Invalid pin number %v\n", pin)
 	}
-
 	data := to7Bit(pinData)
 	cmd := []byte{byte(AnalogMessage) | byte(pin), data[0], data[1]}
-	err = c.sendCommand(cmd)
-	return
+	return c.sendCommand(cmd)
 }
 
-func (c *FirmataClient) sendCommand(cmd []byte) (err error) {
+func (c *FirmataClient) sendCommand(cmd []byte) error {
+	// TODO(jbd): Do not concat.
 	bStr := ""
 	for _, b := range cmd {
 		bStr = bStr + fmt.Sprintf(" %#2x", b)
 	}
-
-	if c.Verbose {
-		c.Log.Printf("Command send%v\n", bStr)
-	}
-
-	_, err = (*c.conn).Write(cmd)
-	return
+	_, err = c.conn.Write(cmd)
+	return err
 }
 
 // Sets the polling interval in milliseconds for analog pin samples

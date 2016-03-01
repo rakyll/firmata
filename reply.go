@@ -69,7 +69,7 @@ func (c *FirmataClient) replyReader() chan struct{} {
 	done := make(chan struct{})
 
 	go func() {
-		r := bufio.NewReader(*c.conn)
+		r := bufio.NewReader(c.conn)
 		c.valueChan = make(chan FirmataValue)
 
 		var init bool
