@@ -13,17 +13,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	myDelay := time.Millisecond * 250
-
 	arduino.SetPinMode(led, firmata.Output)
-	for x := 0; x < 10; x++ {
+	for {
 		// Turn ON led
 		arduino.DigitalWrite(led, true)
-		time.Sleep(myDelay)
+		time.Sleep(time.Millisecond * 250)
 		// Turn OFF led
 		arduino.DigitalWrite(led, false)
-		time.Sleep(myDelay)
+		time.Sleep(time.Millisecond * 250)
 	}
-	arduino.Close()
 }
