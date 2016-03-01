@@ -25,9 +25,9 @@ import (
 
 // Arduino Firmata client for golang
 type FirmataClient struct {
-	serialDev string
-	baud      int
-	conn      io.ReadWriteCloser
+	dev  string
+	baud int
+	conn io.ReadWriteCloser
 
 	protocolVersion []byte
 	firmwareVersion []int
@@ -58,7 +58,7 @@ func NewClient(dev string, baud int) (*FirmataClient, error) {
 	}
 
 	client := &FirmataClient{
-		serialDev: dev,
+		dev:       dev,
 		baud:      baud,
 		conn:      conn,
 		valueChan: make(chan FirmataValue),
