@@ -71,8 +71,8 @@ func (c *FirmataClient) replyReader() chan struct{} {
 		for {
 			b, err := r.ReadByte()
 			if err != nil {
-				c.Log.Print(err)
-				return
+				// TODO(jbd): Handle error somehow
+				panic(err)
 			}
 			cmd := FirmataCommand(b)
 			if !init {

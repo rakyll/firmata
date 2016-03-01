@@ -36,13 +36,10 @@ func (c *FirmataClient) SerialData() <-chan string {
 }
 
 func (c *FirmataClient) parseSerialResponse(data7bit []byte) {
+	// TODO(jbd): Make the byte slice with the right length.
 	data := make([]byte, 0)
 	for i := 1; i < len(data7bit); i = i + 2 {
 		data = append(data, byte(from7Bit(data7bit[i], data7bit[i+1])))
 	}
-	select {
-	case c.serialChan <- string(data):
-	default:
-		c.Log.Print("Serial data buffer overflow. No listener?")
-	}
+	c.serialChan <- string(data)
 }

@@ -18,8 +18,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
-	"os"
 	"time"
 
 	"github.com/tarm/serial"
@@ -30,7 +28,6 @@ type FirmataClient struct {
 	serialDev string
 	baud      int
 	conn      io.ReadWriteCloser
-	Log       *log.Logger
 
 	protocolVersion []byte
 	firmwareVersion []int
@@ -65,7 +62,6 @@ func NewClient(dev string, baud int) (*FirmataClient, error) {
 		baud:      baud,
 		conn:      conn,
 		valueChan: make(chan FirmataValue),
-		Log:       log.New(os.Stdout, "[go-firmata] ", log.Ltime),
 	}
 
 	inited := client.replyReader()

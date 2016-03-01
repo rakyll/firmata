@@ -30,7 +30,7 @@ func (c *FirmataClient) parseSysEx(data []byte) {
 
 	switch {
 	case cmd == StringData:
-		c.Log.Printf("String data: %v", string(data))
+		// do nothing?
 	case cmd == CapabilityResponse:
 		dataBuf := bytes.NewBuffer(data)
 		c.pinModes = make([]map[PinMode]interface{}, 0)
@@ -51,7 +51,6 @@ func (c *FirmataClient) parseSysEx(data []byte) {
 			c.pinModes = append(c.pinModes, pinModes)
 			pin = pin + 1
 		}
-		c.Log.Printf("Total pins: %v\n", pin-1)
 		c.capabilityDone = true
 	case cmd == AnalogMappingResponse:
 		c.analogPinsChannelMap = make(map[int]byte)
@@ -68,7 +67,6 @@ func (c *FirmataClient) parseSysEx(data []byte) {
 		c.firmwareVersion[0] = int(data[0])
 		c.firmwareVersion[1] = int(data[1])
 		data = data[2:]
-		c.Log.Printf("in %v", data[2:])
 		c.firmwareName = multibyteString(data)
 		c.sendSysEx(AnalogMappingQuery)
 		c.sendSysEx(CapabilityQuery)
@@ -81,7 +79,6 @@ func (c *FirmataClient) parseSysEx(data []byte) {
 
 func (c *FirmataClient) sendSysEx(cmd SysExCommand, data ...byte) (err error) {
 	var b bytes.Buffer
-
 	b.WriteByte(byte(StartSysEx))
 	b.WriteByte(byte(cmd))
 	b.Write(data)
@@ -91,8 +88,6 @@ func (c *FirmataClient) sendSysEx(cmd SysExCommand, data ...byte) (err error) {
 	for _, b := range b.Bytes() {
 		bStr = bStr + fmt.Sprintf(" %#2x", b)
 	}
-	c.Log.Printf("SysEx send %v\n", bStr)
-
 	_, err = b.WriteTo(c.conn)
 	return
 }
