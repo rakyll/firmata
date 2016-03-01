@@ -52,9 +52,9 @@ type FirmataClient struct {
 	Verbose bool
 }
 
-// Creates a new FirmataClient object and connects to the Arduino board
-// over specified serial port. This function blocks till a connection is
-// succesfullt established and pin mappings are retrieved.
+// NewClient creates a new FirmataClient and connects to the Arduino board
+// over specified serial port. It blocks till a connection is
+// succesfully established and pin mappings are retrieved.
 func NewClient(dev string, baud int) (*FirmataClient, error) {
 	c := &serial.Config{Name: dev, Baud: baud}
 	conn, err := serial.OpenPort(c)
