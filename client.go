@@ -48,8 +48,6 @@ type FirmataClient struct {
 	valueChan  chan FirmataValue
 	serialChan chan string
 	spiChan    chan []byte
-
-	Verbose bool
 }
 
 // NewClient creates a new FirmataClient and connects to the Arduino board

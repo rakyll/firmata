@@ -27,9 +27,6 @@ func (c *FirmataClient) parseSysEx(data []byte) {
 	for _, b := range data {
 		bStr = bStr + fmt.Sprintf(" %#2x", b)
 	}
-	if c.Verbose {
-		c.Log.Printf("SysEx recv %v\n", bStr)
-	}
 
 	switch {
 	case cmd == StringData:
