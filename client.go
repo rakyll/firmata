@@ -90,12 +90,6 @@ func NewClient(dev string, baud int) (client *FirmataClient, err error) {
 
 // Close the serial connection to properly clean up after ourselves
 // Usage: defer client.Close()
-func (c *FirmataClient) Delay(duration time.Duration) {
-	time.Sleep(duration)
-}
-
-// Close the serial connection to properly clean up after ourselves
-// Usage: defer client.Close()
 func (c *FirmataClient) Close() {
 	(*c.conn).Close()
 }

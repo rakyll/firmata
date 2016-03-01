@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/rakyll/go-firmata"
 	"time"
+
+	"github.com/rakyll/go-firmata"
 )
 
 var led uint8 = 13
@@ -19,10 +20,10 @@ func main() {
 	for x := 0; x < 10; x++ {
 		// Turn ON led
 		arduino.DigitalWrite(led, true)
-		arduino.Delay(myDelay)
+		time.Sleep(myDelay)
 		// Turn OFF led
 		arduino.DigitalWrite(led, false)
-		arduino.Delay(myDelay)
+		time.Sleep(myDelay)
 
 	}
 	arduino.Close()
