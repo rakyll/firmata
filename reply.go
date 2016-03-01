@@ -61,7 +61,7 @@ func (v FirmataValue) String() string {
 	}
 }
 
-func (c *FirmataClient) replyReader() chan struct{} {
+func (c *Client) replyReader() chan struct{} {
 	done := make(chan struct{})
 
 	go func() {

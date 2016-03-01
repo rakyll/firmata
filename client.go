@@ -24,7 +24,7 @@ import (
 )
 
 // Arduino Firmata client for golang
-type FirmataClient struct {
+type Client struct {
 	dev  string
 	baud int
 	conn io.ReadWriteCloser
@@ -47,17 +47,17 @@ type FirmataClient struct {
 	spiChan    chan []byte
 }
 
-// NewClient creates a new FirmataClient and connects to the Arduino board
+// NewClient creates a new Client and connects to the Arduino board
 // over specified serial port. It blocks till a connection is
 // succesfully established and pin mappings are retrieved.
-func NewClient(dev string, baud int) (*FirmataClient, error) {
+func NewClient(dev string, baud int) (*Client, error) {
 	c := &serial.Config{Name: dev, Baud: baud}
 	conn, err := serial.OpenPort(c)
 	if err != nil {
 		return nil, err
 	}
 
-	client := &FirmataClient{
+	client := &Client{
 		dev:       dev,
 		baud:      baud,
 		conn:      conn,
@@ -82,12 +82,12 @@ func NewClient(dev string, baud int) (*FirmataClient, error) {
 	return nil, errors.New("cannot open connection to the device; timeout")
 }
 
-func (c *FirmataClient) Close() error {
+func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
 // SetPinMode sets the pin mode.
-func (c *FirmataClient) SetPinMode(pin uint8, mode PinMode) error {
+func (c *Client) SetPinMode(pin uint8, mode PinMode) error {
 	if c.pinModes[pin][mode] == nil {
 		return fmt.Errorf("pin mode = %v not supported by pin %v", mode, pin)
 	}
@@ -96,7 +96,7 @@ func (c *FirmataClient) SetPinMode(pin uint8, mode PinMode) error {
 
 // Specified if a digital Pin should be watched for input.
 // Values will be streamed back over a channel which can be retrieved by the GetValues() call
-func (c *FirmataClient) EnableDigitalInput(pin uint, val bool) error {
+func (c *Client) EnableDigitalInput(pin uint, val bool) error {
 	if pin < 0 || pin > uint(len(c.pinModes)) {
 		return fmt.Errorf("invalid pin number: %v", pin)
 	}
@@ -112,7 +112,7 @@ func (c *FirmataClient) EnableDigitalInput(pin uint, val bool) error {
 }
 
 // Set the value of a digital pin
-func (c *FirmataClient) DigitalWrite(pin uint8, val bool) error {
+func (c *Client) DigitalWrite(pin uint8, val bool) error {
 	if pin < 0 || pin > uint8(len(c.pinModes)) && c.pinModes[pin][Output] != nil {
 		return fmt.Errorf("invalid pin number: %v", pin)
 	}
@@ -131,7 +131,7 @@ func (c *FirmataClient) DigitalWrite(pin uint8, val bool) error {
 
 // Specified if a analog Pin should be watched for input.
 // Values will be streamed back over a channel which can be retrieved by the Values() call.
-func (c *FirmataClient) EnableAnalogInput(pin uint, val bool) error {
+func (c *Client) EnableAnalogInput(pin uint, val bool) error {
 	if pin < 0 || pin > uint(len(c.pinModes)) && c.pinModes[pin][Analog] != nil {
 		return fmt.Errorf("invalid pin number: %v\n", pin)
 	}
@@ -144,7 +144,7 @@ func (c *FirmataClient) EnableAnalogInput(pin uint, val bool) error {
 	return c.sendCommand(cmd)
 }
 
-func (c *FirmataClient) AnalogWrite(pin uint, pinData byte) error {
+func (c *Client) AnalogWrite(pin uint, pinData byte) error {
 	if pin < 0 || pin > uint(len(c.pinModes)) && c.pinModes[pin][Analog] != nil {
 		return fmt.Errorf("invalid pin number %v\n", pin)
 	}
@@ -153,7 +153,7 @@ func (c *FirmataClient) AnalogWrite(pin uint, pinData byte) error {
 	return c.sendCommand(cmd)
 }
 
-func (c *FirmataClient) sendCommand(cmd []byte) error {
+func (c *Client) sendCommand(cmd []byte) error {
 	// TODO(jbd): Do not concat.
 	bStr := ""
 	for _, b := range cmd {
@@ -163,11 +163,11 @@ func (c *FirmataClient) sendCommand(cmd []byte) error {
 	return err
 }
 
-func (c *FirmataClient) SetAnalogSamplingInterval(ms byte) error {
+func (c *Client) SetAnalogSamplingInterval(ms byte) error {
 	data := to7Bit(ms)
 	return c.sendSysEx(SamplingInterval, data[0], data[1])
 }
 
-func (c *FirmataClient) Values() <-chan FirmataValue {
+func (c *Client) Values() <-chan FirmataValue {
 	return c.valueChan
 }

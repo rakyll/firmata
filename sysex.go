@@ -19,7 +19,7 @@ import (
 	"fmt"
 )
 
-func (c *FirmataClient) parseSysEx(data []byte) {
+func (c *Client) parseSysEx(data []byte) {
 	cmd := SysExCommand(data[0])
 	data = data[1:]
 
@@ -77,7 +77,7 @@ func (c *FirmataClient) parseSysEx(data []byte) {
 	}
 }
 
-func (c *FirmataClient) sendSysEx(cmd SysExCommand, data ...byte) (err error) {
+func (c *Client) sendSysEx(cmd SysExCommand, data ...byte) (err error) {
 	var b bytes.Buffer
 	b.WriteByte(byte(StartSysEx))
 	b.WriteByte(byte(cmd))

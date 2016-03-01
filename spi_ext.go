@@ -17,7 +17,7 @@ package firmata
 type SPISubCommand byte
 
 // Enable SPI communication for selected chip-select pin
-func (c *FirmataClient) SPIConfig(csPin byte, spiMode byte) (err error) {
+func (c *Client) SPIConfig(csPin byte, spiMode byte) (err error) {
 	csPinBytes := to7Bit(csPin)
 	spiModeBytes := to7Bit(spiMode)
 	c.spiChan = make(chan []byte)
@@ -29,7 +29,7 @@ func (c *FirmataClient) SPIConfig(csPin byte, spiMode byte) (err error) {
 }
 
 // Read and write data to SPI device
-func (c *FirmataClient) SPIReadWrite(csPin byte, data []byte) (dataOut []byte, err error) {
+func (c *Client) SPIReadWrite(csPin byte, data []byte) (dataOut []byte, err error) {
 	csPinBytes := to7Bit(csPin)
 	data7Bit := []byte{byte(SPIComm)}
 
@@ -44,7 +44,7 @@ func (c *FirmataClient) SPIReadWrite(csPin byte, data []byte) (dataOut []byte, e
 	return
 }
 
-func (c *FirmataClient) parseSPIResponse(data7bit []byte) {
+func (c *Client) parseSPIResponse(data7bit []byte) {
 	data := make([]byte, 0)
 	for i, _ := range data7bit {
 		if i >= 3 && i%2 != 0 {

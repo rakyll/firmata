@@ -18,7 +18,7 @@ type SerialSubCommand byte
 
 // Configure a builtin or soft serial port. This command must be called before sending serial data.
 // Set txPin and rxPin to 0x00 for builtin serial ports.
-func (c *FirmataClient) SerialConfig(port SerialPort, baud int, txPin byte, rxPin byte) (err error) {
+func (c *Client) SerialConfig(port SerialPort, baud int, txPin byte, rxPin byte) (err error) {
 	baudBytes := intto7Bit(baud)
 	bufferSize := intto7Bit(1024)
 	termChar := to7Bit('\n')
@@ -31,11 +31,11 @@ func (c *FirmataClient) SerialConfig(port SerialPort, baud int, txPin byte, rxPi
 	return
 }
 
-func (c *FirmataClient) SerialData() <-chan string {
+func (c *Client) SerialData() <-chan string {
 	return c.serialChan
 }
 
-func (c *FirmataClient) parseSerialResponse(data7bit []byte) {
+func (c *Client) parseSerialResponse(data7bit []byte) {
 	// TODO(jbd): Make the byte slice with the right length.
 	data := make([]byte, 0)
 	for i := 1; i < len(data7bit); i = i + 2 {
