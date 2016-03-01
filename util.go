@@ -27,14 +27,11 @@ func intto7Bit(i int) []byte {
 }
 
 func multibyteString(data []byte) (str string) {
-
 	if len(data)%2 != 0 {
 		data = append(data, 0)
 	}
-
 	for i := 0; i < len(data); i = i + 2 {
 		str = str + string(from7Bit(data[i], data[i+1]))
 	}
-
 	return
 }

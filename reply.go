@@ -29,20 +29,16 @@ func (v FirmataValue) IsAnalog() bool {
 	return (v.valueType & 0xF0) == AnalogMessage
 }
 
-func (v FirmataValue) GetAnalogValue() (pin int, val int, err error) {
+func (v FirmataValue) AnalogValue() (pin int, val int, err error) {
 	if !v.IsAnalog() {
-		err = fmt.Errorf("Cannot get analog value for digital pin")
-		return
+		return 0, 0, fmt.Errorf("cannot get analog value for digital pin")
 	}
-	pin = v.analogChannelPinsMap[byte(v.valueType & ^AnalogMessage)]
-	val = v.value
-	return
+	return v.analogChannelPinsMap[byte(v.valueType & ^AnalogMessage)], v.value, nil
 }
 
-func (v FirmataValue) GetDigitalValue() (port byte, val map[byte]interface{}, err error) {
+func (v FirmataValue) DigitalValue() (port byte, val map[byte]interface{}, err error) {
 	if v.IsAnalog() {
-		err = fmt.Errorf("Cannot get digital value for analog pin")
-		return
+		return byte(0), nil, fmt.Errorf("Cannot get digital value for analog pin")
 	}
 
 	port = byte(v.valueType & ^DigitalMessage)
@@ -57,10 +53,10 @@ func (v FirmataValue) GetDigitalValue() (port byte, val map[byte]interface{}, er
 
 func (v FirmataValue) String() string {
 	if v.IsAnalog() {
-		p, v, _ := v.GetAnalogValue()
+		p, v, _ := v.AnalogValue()
 		return fmt.Sprintf("Analog value %v = %v", p, v)
 	} else {
-		p, v, _ := v.GetAnalogValue()
+		p, v, _ := v.AnalogValue()
 		return fmt.Sprintf("Digital port %v = %b", p, v)
 	}
 }

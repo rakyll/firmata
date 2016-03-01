@@ -92,7 +92,7 @@ func (c *FirmataClient) Close() error {
 	return c.conn.Close()
 }
 
-// Sets the Pin mode (input, output, etc.) for the Arduino pin
+// SetPinMode sets the pin mode.
 func (c *FirmataClient) SetPinMode(pin uint8, mode PinMode) error {
 	if c.pinModes[pin][mode] == nil {
 		return fmt.Errorf("pin mode = %v not supported by pin %v", mode, pin)
@@ -132,11 +132,7 @@ func (c *FirmataClient) DigitalWrite(pin uint8, val bool) error {
 	}
 	data := to7Bit(*(portData))
 	cmd := []byte{byte(DigitalMessage) | byte(port), data[0], data[1]}
-	if err := c.sendCommand(cmd); err != nil {
-		return err
-	}
-	c.Log.Printf("DigitalWrite: pin %d -> %t\r\n", pin, val)
-	return nil
+	return c.sendCommand(cmd)
 }
 
 // Specified if a analog Pin should be watched for input.
@@ -179,10 +175,9 @@ func (c *FirmataClient) sendCommand(cmd []byte) error {
 	return err
 }
 
-func (c *FirmataClient) SetAnalogSamplingInterval(ms byte) (err error) {
+func (c *FirmataClient) SetAnalogSamplingInterval(ms byte) error {
 	data := to7Bit(ms)
-	err = c.sendSysEx(SamplingInterval, data[0], data[1])
-	return
+	return c.sendSysEx(SamplingInterval, data[0], data[1])
 }
 
 func (c *FirmataClient) Values() <-chan FirmataValue {

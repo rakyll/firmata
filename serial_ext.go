@@ -31,13 +31,11 @@ func (c *FirmataClient) SerialConfig(port SerialPort, baud int, txPin byte, rxPi
 	return
 }
 
-// Get channel for incoming serial data
-func (c *FirmataClient) GetSerialData() <-chan string {
+func (c *FirmataClient) SerialData() <-chan string {
 	return c.serialChan
 }
 
 func (c *FirmataClient) parseSerialResponse(data7bit []byte) {
-
 	data := make([]byte, 0)
 	for i := 1; i < len(data7bit); i = i + 2 {
 		data = append(data, byte(from7Bit(data7bit[i], data7bit[i+1])))
