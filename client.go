@@ -15,12 +15,14 @@
 package firmata
 
 import (
+	"errors"
 	"fmt"
-	"github.com/tarm/serial"
 	"io"
 	"log"
 	"os"
 	"time"
+
+	"github.com/tarm/serial"
 )
 
 // Arduino Firmata client for golang
@@ -34,7 +36,6 @@ type FirmataClient struct {
 	firmwareVersion []int
 	firmwareName    string
 
-	ready             bool
 	analogMappingDone bool
 	capabilityDone    bool
 
@@ -69,27 +70,21 @@ func NewClient(dev string, baud int) (client *FirmataClient, err error) {
 		conn:      &conn,
 		Log:       log.New(os.Stdout, "[go-firmata] ", log.Ltime),
 	}
-	go client.replyReader()
 
+	done := client.replyReader()
 	conn.Write([]byte{byte(SystemReset)})
-	t := time.NewTicker(time.Second)
 
-	for !(client.ready && client.analogMappingDone && client.capabilityDone) {
+	for {
 		select {
-		case <-t.C:
-			//no-op
+		case <-done:
+			return client, err
 		case <-time.After(time.Second * 15):
-			client.Log.Print("No response in 30 seconds. Resetting arduino")
 			conn.Write([]byte{byte(SystemReset)})
 		case <-time.After(time.Second * 30):
-			client.Log.Print("Unable to initialize connection")
 			conn.Close()
-			client = nil
+			return nil, errors.New("cannot open connection to the device; timeout")
 		}
 	}
-
-	client.Log.Print("Client ready to use")
-
 	return
 }
 

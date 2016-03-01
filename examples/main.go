@@ -1,19 +1,17 @@
 package main
 
 import (
-	"github.com/argandas/go-firmata"
+	"github.com/rakyll/go-firmata"
 	"time"
 )
 
 var led uint8 = 13
 
 func main() {
-	arduino, err := firmata.NewClient("COM24", 57600)
+	arduino, err := firmata.NewClient("/dev/cu.usbmodem1421", 57600)
 	if err != nil {
 		panic(err)
 	}
-
-	// arduino.Verbose = true
 
 	myDelay := time.Millisecond * 250
 

@@ -20,14 +20,7 @@ import (
 )
 
 func (c *FirmataClient) parseSysEx(data []byte) {
-	var cmd SysExCommand
-
-	cmd = SysExCommand(data[0])
-
-	if c.Verbose {
-		c.Log.Printf("Processing sysex %v\n", cmd)
-	}
-
+	cmd := SysExCommand(data[0])
 	data = data[1:]
 
 	bStr := ""
@@ -72,7 +65,6 @@ func (c *FirmataClient) parseSysEx(data []byte) {
 				c.analogChannelPinsMap[channel] = pin
 			}
 		}
-		c.Log.Printf("pin -> channel: %v\n", c.analogPinsChannelMap)
 		c.analogMappingDone = true
 	case cmd == ReportFirmware:
 		c.firmwareVersion = make([]int, 2)
@@ -81,16 +73,12 @@ func (c *FirmataClient) parseSysEx(data []byte) {
 		data = data[2:]
 		c.Log.Printf("in %v", data[2:])
 		c.firmwareName = multibyteString(data)
-		c.Log.Printf("Firmware: %v [%v.%v]", c.firmwareName, c.firmwareVersion[0], c.firmwareVersion[1])
-		c.ready = true
 		c.sendSysEx(AnalogMappingQuery)
 		c.sendSysEx(CapabilityQuery)
 	case cmd == Serial:
 		c.parseSerialResponse(data)
 	case cmd == SysExSPI:
 		c.parseSPIResponse(data)
-	default:
-		c.Log.Printf("Discarding unexpected SysEx command %v", cmd)
 	}
 }
 

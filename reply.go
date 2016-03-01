@@ -65,57 +65,49 @@ func (v FirmataValue) String() string {
 	}
 }
 
-func (c *FirmataClient) replyReader() {
-	r := bufio.NewReader(*c.conn)
-	c.valueChan = make(chan FirmataValue)
-	var init bool
-	for {
-		b, err := (r.ReadByte())
-		if err != nil {
-			c.Log.Print(err)
-			return
-		}
-		cmd := FirmataCommand(b)
-		if c.Verbose {
-			c.Log.Printf("Incoming cmd %v", cmd)
-		}
-		if !init {
-			if cmd != ReportVersion {
-				if c.Verbose {
-					c.Log.Printf("Discarding unexpected command byte %0d (not initialized)\n", b)
-				}
-				continue
-			} else {
-				init = true
-			}
-		}
+func (c *FirmataClient) replyReader() chan struct{} {
+	done := make(chan struct{})
 
-		switch {
-		case cmd == ReportVersion:
-			c.protocolVersion = make([]byte, 2)
-			c.protocolVersion[0], err = r.ReadByte()
-			c.protocolVersion[1], err = r.ReadByte()
-			c.Log.Printf("Protocol version: %d.%d", c.protocolVersion[0], c.protocolVersion[1])
-		case cmd == StartSysEx:
-			var sysExData []byte
-			sysExData, err = r.ReadSlice(byte(EndSysEx))
-			if err == nil {
-				c.parseSysEx(sysExData[0 : len(sysExData)-1])
+	go func() {
+		r := bufio.NewReader(*c.conn)
+		c.valueChan = make(chan FirmataValue)
+
+		var init bool
+		for {
+			b, err := (r.ReadByte())
+			if err != nil {
+				c.Log.Print(err)
+				return
 			}
-		case (cmd&DigitalMessage) > 0 || byte(cmd&AnalogMessage) > 0:
-			b1, _ := r.ReadByte()
-			b2, _ := r.ReadByte()
-			select {
-			case c.valueChan <- FirmataValue{cmd, int(from7Bit(b1, b2)), c.analogChannelPinsMap}:
+			cmd := FirmataCommand(b)
+			if !init {
+				if cmd != ReportVersion {
+					continue
+				} else {
+					init = true
+				}
 			}
-		default:
-			if c.Verbose {
-				c.Log.Printf("Discarding unexpected command byte %0d\n", b)
+
+			switch {
+			case cmd == ReportVersion:
+				c.protocolVersion = make([]byte, 2)
+				c.protocolVersion[0], err = r.ReadByte()
+				c.protocolVersion[1], err = r.ReadByte()
+			case cmd == StartSysEx:
+				var sysExData []byte
+				sysExData, err = r.ReadSlice(byte(EndSysEx))
+				if err == nil {
+					c.parseSysEx(sysExData[0 : len(sysExData)-1])
+					if c.analogMappingDone && c.capabilityDone {
+						close(done)
+					}
+				}
+			case (cmd&DigitalMessage) > 0 || byte(cmd&AnalogMessage) > 0:
+				b1, _ := r.ReadByte()
+				b2, _ := r.ReadByte()
+				c.valueChan <- FirmataValue{cmd, int(from7Bit(b1, b2)), c.analogChannelPinsMap}
 			}
 		}
-		if err != nil {
-			c.Log.Print(err)
-			return
-		}
-	}
+	}()
+	return done
 }
