@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	"github.com/rakyll/go-firmata"
+	"github.com/rakyll/firmata"
 )
 
 var led uint8 = 13
